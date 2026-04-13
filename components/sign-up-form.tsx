@@ -40,14 +40,23 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: `${window.location.origin}/home`,
         },
       });
       if (error) throw error;
+
+      if (data.user) {
+        localStorage.setItem("resqnet_user", JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          createdAt: new Date().toISOString()
+        }));
+      }
+
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -58,10 +67,10 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="border-brand-red/20 bg-card/50 backdrop-blur-sm shadow-[0_0_15px_rgba(255,0,0,0.1)]">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+          <CardTitle className="text-2xl text-brand-red">Sign up</CardTitle>
+          <CardDescription>Create a new ResQNet account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
@@ -75,6 +84,7 @@ export function SignUpForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="bg-background/50 border-brand-aqua/20 focus-visible:ring-brand-aqua"
                 />
               </div>
               <div className="grid gap-2">
@@ -87,6 +97,7 @@ export function SignUpForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="bg-background/50 border-brand-aqua/20 focus-visible:ring-brand-aqua"
                 />
               </div>
               <div className="grid gap-2">
@@ -99,16 +110,17 @@ export function SignUpForm({
                   required
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
+                  className="bg-background/50 border-brand-aqua/20 focus-visible:ring-brand-aqua"
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              {error && <p className="text-sm text-brand-red font-medium">{error}</p>}
+              <Button type="submit" className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-bold" disabled={isLoading}>
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
+              <Link href="/login" className="text-brand-aqua underline underline-offset-4 hover:text-brand-aqua/80">
                 Login
               </Link>
             </div>
